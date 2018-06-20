@@ -11,6 +11,7 @@
 import sys, string, time, traceback
 import com.xhaus.jyson.JysonCodec as json
 from jira.JiraServerExt import JiraServerExt
+from jira import JiraServer
 
 if server is None:
     sys.exit("No server provided.")
@@ -18,16 +19,24 @@ if server is None:
 if jql is None:
     sys.exit("No jql provided.")
 
-jira = JiraServerExt(jiraServer, username, password)
+jiraExt = JiraServerExt(server, username, password)
+jira = JiraServer(server, username, password)
+
 
 try:
-    issues = jira.queryForIssueIds( jql )
+    issues = jiraExt.queryForIssueIds( jql )
 
-    latestIssue = issues[0]
+    if len(issues) == 0:
+        triggerState = None
+    else:
+        mostRecentIssueId = issues[0]
 
-    triggerState = latestIssue
+        if mostRecentIssueId != triggerState:
+            print("Setting triggerState %s" % mostRecentIssueId)
+            triggerState = mostRecentIssueId
 
-    print("Setting latestIssue/triggerState %s" % triggerState)
+            newIssue = jira.query("id = %s" % latestIssue)[0]
+            latestIssue = newIssue['issue']
 
 except Exception, e:
     sys.exit("Failed to find issues in JIRA: [%s]" % str(e))
