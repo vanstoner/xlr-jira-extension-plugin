@@ -35,8 +35,8 @@ try:
             print("Setting triggerState %s" % mostRecentIssueId)
             triggerState = mostRecentIssueId
 
-            newIssue = jira.query("id = %s" % latestIssue)[0]
-            latestIssue = newIssue['issue']
+            newIssue = jira.query("id = %s" % mostRecentIssueId).items()
+            latestIssue = newIssue[0][0]
 
 except Exception, e:
     sys.exit("Failed to find issues in JIRA: [%s]" % str(e))
